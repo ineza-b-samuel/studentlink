@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>StudentLink v3 • Where Students Unite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg2: #f8f9fb;
+            --bg3: #f0f2f7;
+            --text: #0f0f14;
+            --text2: #5b5b6c;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --border: #e4e6ed;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --online: #10b981;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+            --radius-sm: 0.6rem;
+            --radius: 1rem;
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark {
+            --bg: #0f0f1a;
+            --bg2: #1a1a2e;
+            --bg3: #252540;
+            --text: #e8e8f0;
+            --text2: #a0a0b8;
+            --accent: #818cf8;
+            --accent-hover: #6d7af0;
+            --border: #2e2e45;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg2);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .app {
+            max-width: 680px;
+            width: 100%;
+            background: var(--bg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            height: 94vh;
+            max-height: 960px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: background var(--transition), border var(--transition);
+            position: relative;
+        }
+
+        /* HEADER */
+        .header {
+            padding: 0.9rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg);
+            z-index: 10;
+            transition: background var(--transition);
+            gap: 0.5rem;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .brand i {
+            color: var(--accent);
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .nav-icons i {
+            font-size: 1.2rem;
+            color: var(--text2);
+            cursor: pointer;
+            padding: 0.3rem;
+            transition: color var(--transition), transform 0.15s;
+            position: relative;
+        }
+
+        .nav-icons i.active {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .nav-icons i:hover {
+            color: var(--accent);
+        }
+
+        .nav-icons .badge-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 1px solid var(--bg);
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg3);
+            padding: 0.3rem 0.8rem 0.3rem 0.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: background var(--transition);
+            flex-shrink: 0;
+        }
+
+        .user-pill:hover {
+            background: var(--border);
+        }
+
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--bg2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .avatar-sm img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .online-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--online);
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+        }
+
+        /* MAIN SCROLL */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.2rem 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        /* THREAD CARD */
+        .thread {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1rem 0.6rem;
+            box-shadow: var(--shadow-sm);
+            transition: background var(--transition), border var(--transition);
+        }
+
+        .thread-header {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--bg3);
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thread-user {
+            font-weight: 650;
+            font-size: 0.9rem;
+        }
+
+        .thread-time {
+            font-size: 0.7rem;
+            color: var(--text2);
+        }
+
+        .thread-body {
+            margin: 0.5rem 0;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .thread-desc {
+            color: var(--text2);
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .thread-media {
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin: 0.7rem 0;
+            max-height: 350px;
+            background: var(--bg3);
+        }
+
+        .thread-media img,
+        .thread-media video {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+            max-height: 350px;
+        }
+
+        .thread-actions {
+            display: flex;
+            gap: 1.8rem;
+            padding: 0.4rem 0;
+            color: var(--text2);
+            font-size: 0.85rem;
+        }
+
+        .thread-actions span {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: color var(--transition);
+        }
+
+        .thread-actions span:hover {
+            color: var(--accent);
+        }
+
+        /* COMMENTS */
+        .comments-wrap {
+            margin-top: 0.3rem;
+            border-top: 1px solid var(--border);
+            padding-top: 0.6rem;
+        }
+
+        .comment {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+            align-items: flex-start;
+        }
+
+        .comment-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--bg3);
+            flex-shrink: 0;
+        }
+
+        .comment-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .comment-content {
+            background: var(--bg3);
+            padding: 0.4rem 0.9rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .reply-row {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .reply-row input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 0.8rem;
+        }
+
+        .reply-send {
+            background: var(--accent);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--bg);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: border var(--transition);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: background var(--transition), transform 0.1s;
+            font-size: 0.85rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn.outline {
+            background: transparent;
+            border: 1.5px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.outline:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn.danger {
+            background: var(--danger);
+        }
+
+        .btn.small {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.6rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-secondary {
+            color: var(--text2);
+            font-size: 0.8rem;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .error-toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--danger);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 999;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border var(--transition);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--accent);
+        }
+
+        .file-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: var(--radius-sm);
+            margin-top: 0.5rem;
+        }
+
+        /* MESSAGING */
+        .conversation-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+
+        .conversation-list-item:hover {
+            background: var(--bg3);
+        }
+
+        .conversation-list-item .avatar {
+            width: 48px;
+            height: 48px;
+            position: relative;
+        }
+
+        .chat-window {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 0.8rem;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            padding-right: 0.3rem;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 0.6rem 1rem;
+            border-radius: 1.2rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-break: break-word;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble.sent {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 0.3rem;
+        }
+
+        .message-bubble.received {
+            align-self: flex-start;
+            background: var(--bg3);
+            color: var(--text);
+            border-bottom-left-radius: 0.3rem;
+        }
+
+        .message-time {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            margin-top: 0.2rem;
+            text-align: right;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+
+        .typing-indicator {
+            font-size: 0.7rem;
+            color: var(--text2);
+            font-style: italic;
+            padding: 0.2rem 0.8rem;
+        }
+
+        /* AI Chat */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 0.8rem;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 0.7rem 1rem;
+            border-radius: 1.2rem;
+            line-height: 1.45;
+            font-size: 0.9rem;
+            word-break: break-word;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 0.3rem;
+        }
+
+        .chat-bubble.ai {
+            align-self: flex-start;
+            background: var(--bg3);
+            color: var(--text);
+            border-bottom-left-radius: 0.3rem;
+        }
+
+        .ai-typing {
+            align-self: flex-start;
+            background: var(--bg3);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            color: var(--text2);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 0.7rem 0.8rem;
+            }
+
+            .brand {
+                font-size: 1.1rem;
+            }
+
+            .nav-icons {
+                gap: 0.5rem;
+            }
+
+            .nav-icons i {
+                font-size: 1rem;
+            }
+
+            .main {
+                padding: 0.8rem;
+            }
+
+            .thread {
+                padding: 0.8rem;
+            }
+
+            .card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" id="appRoot">
+        <header class="header">
+            <div class="brand"><i class="fas fa-link"></i> StudentLink</div>
+            <div class="nav-icons">
+                <i class="fas fa-home active" id="navHome" title="Feed"></i>
+                <i class="fas fa-search" id="navDiscover" title="Discover"></i>
+                <i class="fas fa-comments" id="navMessages" title="Messages"></i>
+                <i class="fas fa-robot" id="navAI" title="AI Study Buddy"></i>
+                <i class="fas fa-user-circle" id="navProfile" title="Profile"></i>
+                <i class="fas fa-cog" id="navSettings" title="Settings"></i>
+                <i class="fas fa-sign-out-alt hidden" id="navLogout" title="Logout"></i>
+            </div>
+            <div class="user-pill hidden" id="userPill">
+                <div class="avatar-sm" id="pillAvatar"><i class="fas fa-user"></i></div>
+                <span id="pillName" style="font-weight:600;font-size:0.8rem;"></span>
+            </div>
+        </header>
+        <div class="main" id="mainContent"></div>
+    </div>
+
+    <script>
+        (() => {
+            // ============ CONFIGURATION ============
+            const SERVER_URL = window.location.origin; // Auto-detect server URL
+            const OPENROUTER_API_KEY = 'YOUR_OPENROUTER_API_KEY_HERE'; // Get key at https://openrouter.ai/keys
+            const AI_MODEL = 'google/gemini-2.0-flash-001';
+            const AI_SYSTEM_PROMPT = `You are a helpful AI study buddy for students. Provide clear, accurate explanations on academic topics. Keep responses concise but thorough. Use a friendly tone.`;
+
+            // ============ STATE ============
+            let currentUser = null;
+            let users = [];
+            let posts = [];
+            let conversations = [];
+            let onlineUsers = new Set();
+            let ws = null;
+            let activeConversationId = null;
+            let unreadMessages = new Set();
+
+            // ============ DOM ELEMENTS ============
+            const main = document.getElementById('mainContent');
+            const navHome = document.getElementById('navHome');
+            const navDiscover = document.getElementById('navDiscover');
+            const navMessages = document.getElementById('navMessages');
+            const navAI = document.getElementById('navAI');
+            const navProfile = document.getElementById('navProfile');
+            const navSettings = document.getElementById('navSettings');
+            const navLogout = document.getElementById('navLogout');
+            const userPill = document.getElementById('userPill');
+            const pillAvatar = document.getElementById('pillAvatar');
+            const pillName = document.getElementById('pillName');
+
+            // ============ HELPERS ============
+            function esc(str) {
+                return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+            }
+
+            function toast(msg, isError = true) {
+                const existing = document.querySelector('.error-toast');
+                if (existing) existing.remove();
+                const t = document.createElement('div');
+                t.className = 'error-toast';
+                t.style.background = isError ? 'var(--danger)' : 'var(--success)';
+                t.textContent = msg;
+                document.body.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
+
+            function timeAgo(timestamp) {
+                const seconds = Math.floor((Date.now() - timestamp) / 1000);
+                if (seconds < 60) return 'just now';
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return `${minutes}m ago`;
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return `${hours}h ago`;
+                return new Date(timestamp).toLocaleDateString();
+            }
+
+            function updateUI() {
+                if (currentUser) {
+                    userPill.classList.remove('hidden');
+                    pillName.textContent = currentUser.name;
+                    pillAvatar.innerHTML = currentUser.profilePic
+                        ? `<img src="${esc(currentUser.profilePic)}" alt="me">`
+                        : '<i class="fas fa-user"></i>';
+                    navLogout.classList.remove('hidden');
+                } else {
+                    userPill.classList.add('hidden');
+                    navLogout.classList.add('hidden');
+                }
+            }
+
+            function setActiveNav(icon) {
+                [navHome, navDiscover, navMessages, navAI, navProfile, navSettings].forEach(i => i.classList.remove('active'));
+                icon.classList.add('active');
+            }
+
+            function applyTheme() {
+                const theme = localStorage.getItem('sl3_theme') || 'light';
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+            }
+
+            // ============ WEBSOCKET ============
+            function connectWebSocket() {
+                if (!currentUser) return;
+
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}`;
+
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    console.log('🔗 WebSocket connected');
+                    ws.send(JSON.stringify({ type: 'login', userId: currentUser.id }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleSocketMessage(data);
+                    } catch (e) {
+                        console.error('Socket message error:', e);
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log('🔌 WebSocket disconnected, reconnecting in 3s...');
+                    setTimeout(connectWebSocket, 3000);
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+            }
+
+            function handleSocketMessage(data) {
+                switch (data.type) {
+                    case 'user_status':
+                        if (data.status === 'online') {
+                            onlineUsers.add(data.userId);
+                        } else {
+                            onlineUsers.delete(data.userId);
+                        }
+                        // Refresh current view if needed
+                        if (main.querySelector('#conversationsList')) renderConversationsList();
+                        if (main.querySelector('#discoverList')) renderDiscover();
+                        break;
+
+                    case 'online_users':
+                        onlineUsers = new Set(data.users);
+                        break;
+
+                    case 'new_post':
+                        posts.unshift(data.post);
+                        if (main.querySelector('#feedContainer')) renderFeed();
+                        break;
+
+                    case 'new_comment':
+                        const post = posts.find(p => p.id === data.postId);
+                        if (post) {
+                            post.comments.push(data.comment);
+                            if (main.querySelector('#feedContainer')) renderFeed();
+                        }
+                        break;
+
+                    case 'new_message':
+                        // Add message to conversation
+                        const conv = conversations.find(c => c.id === data.conversationId);
+                        if (conv) {
+                            conv.messages.push(data.message);
+                        }
+                        // If this conversation is open, update view
+                        if (activeConversationId === data.conversationId) {
+                            renderChatWindow(data.conversationId);
+                        } else {
+                            unreadMessages.add(data.conversationId);
+                            updateMessageBadge();
+                            if (main.querySelector('#conversationsList')) renderConversationsList();
+                        }
+                        break;
+
+                    case 'message_sent':
+                        const sentConv = conversations.find(c => c.id === data.conversationId);
+                        if (sentConv) {
+                            sentConv.messages.push(data.message);
+                        }
+                        if (activeConversationId === data.conversationId) {
+                            renderChatWindow(data.conversationId);
+                        }
+                        break;
+
+                    case 'user_typing':
+                        if (activeConversationId === data.conversationId) {
+                            const typingEl = document.getElementById('typingIndicator');
+                            if (typingEl) {
+                                typingEl.textContent = data.isTyping ? `${getUserById(data.userId)?.name || 'User'} is typing...` : '';
+                            }
+                        }
+                        break;
+                }
+            }
+
+            function updateMessageBadge() {
+                const badge = navMessages.querySelector('.badge-dot');
+                if (unreadMessages.size > 0) {
+                    if (!badge) {
+                        const dot = document.createElement('span');
+                        dot.className = 'badge-dot';
+                        navMessages.appendChild(dot);
+                    }
+                } else {
+                    if (badge) badge.remove();
+                }
+            }
+
+            function getUserById(id) {
+                return users.find(u => u.id === id) || { name: 'Unknown', profilePic: '' };
+            }
+
+            // ============ API CALLS ============
+            async function apiCall(endpoint, method = 'GET', body = null) {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (body) options.body = JSON.stringify(body);
+
+                try {
+                    const response = await fetch(`${SERVER_URL}${endpoint}`, options);
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Request failed');
+                    return data;
+                } catch (error) {
+                    toast(error.message);
+                    throw error;
+                }
+            }
+
+            async function loadUsers() {
+                const data = await apiCall('/api/users');
+                users = data.users;
+            }
+
+            async function loadPosts() {
+                const data = await apiCall('/api/posts');
+                posts = data.posts;
+            }
+
+            async function loadConversations() {
+                if (!currentUser) return;
+                const data = await apiCall(`/api/conversations/${currentUser.id}`);
+                conversations = data.conversations;
+            }
+
+            // ============ RENDER FUNCTIONS ============
+            function renderLogin() {
+                setActiveNav(navHome);
+                main.innerHTML = `
+        <div class="card">
+          <h2 style="display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-sign-in-alt" style="color:var(--accent);"></i> Welcome Back</h2>
+          <div class="input-group"><label>Email</label><input type="email" id="loginEmail" placeholder="student@studentlink.edu" value="mia@studentlink.edu"></div>
+          <div class="input-group"><label>Password</label><input type="password" id="loginPass" placeholder="••••••" value="pass123"></div>
+          <button class="btn" id="loginBtn"><i class="fas fa-arrow-right"></i> Log In</button>
+          <p class="text-center text-secondary">Don't have an account? <a href="#" id="showSignup" style="color:var(--accent);">Sign Up</a></p>
+        </div>`;
+
+                document.getElementById('loginBtn').addEventListener('click', async () => {
+                    const email = document.getElementById('loginEmail').value.trim();
+                    const password = document.getElementById('loginPass').value;
+                    if (!email || !password) { toast('Please fill all fields.'); return; }
+
+                    try {
+                        const data = await apiCall('/api/login', 'POST', { email, password });
+                        currentUser = data.user;
+                        updateUI();
+                        connectWebSocket();
+                        await loadUsers();
+                        await loadPosts();
+                        await loadConversations();
+                        renderFeed();
+                    } catch (e) {
+                        // Error already shown by apiCall
+                    }
+                });
+
+                document.getElementById('showSignup').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    renderSignup();
+                });
+            }
+
+            function renderSignup() {
+                main.innerHTML = `
+        <div class="card">
+          <h2><i class="fas fa-user-plus" style="color:var(--accent);"></i> Create Account</h2>
+          <div class="input-group"><label>Full Name</label><input type="text" id="signName" placeholder="Your full name"></div>
+          <div class="input-group"><label>Email</label><input type="email" id="signEmail" placeholder="student@studentlink.edu"></div>
+          <div class="input-group"><label>Password</label><input type="password" id="signPass" placeholder="Min 6 characters"></div>
+          <div class="input-group"><label>Profile Picture URL</label><input type="text" id="signPicUrl" placeholder="https://..."></div>
+          <div class="input-group"><label>Bio</label><input type="text" id="signBio" placeholder="e.g., CS Major"></div>
+          <button class="btn" id="signupBtn"><i class="fas fa-paper-plane"></i> Sign Up</button>
+          <p class="text-center text-secondary">Already have an account? <a href="#" id="showLogin" style="color:var(--accent);">Log In</a></p>
+        </div>`;
+
+                document.getElementById('showLogin').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    renderLogin();
+                });
+
+                document.getElementById('signupBtn').addEventListener('click', async () => {
+                    const name = document.getElementById('signName').value.trim();
+                    const email = document.getElementById('signEmail').value.trim();
+                    const password = document.getElementById('signPass').value;
+                    const profilePic = document.getElementById('signPicUrl').value.trim();
+                    const bio = document.getElementById('signBio').value.trim();
+
+                    if (!name || !email || password.length < 6) {
+                        toast('Please fill all fields correctly. Password min 6 chars.');
+                        return;
+                    }
+
+                    try {
+                        const data = await apiCall('/api/register', 'POST', { name, email, password, profilePic, bio });
+                        currentUser = data.user;
+                        updateUI();
+                        connectWebSocket();
+                        await loadUsers();
+                        await loadPosts();
+                        toast('Account created! Welcome to StudentLink! 🎉', false);
+                        renderFeed();
+                    } catch (e) {
+                        // Error already shown
+                    }
+                });
+            }
+
+            function renderFeed() {
+                if (!currentUser) { renderLogin(); return; }
+                setActiveNav(navHome);
+
+                const sorted = [...posts].sort((a, b) => b.timestamp - a.timestamp);
+                let html = `
+        <div class="flex-between mb-1">
+          <h2 style="font-weight:700;">📚 Feed</h2>
+          <button class="btn" id="newPostBtn"><i class="fas fa-plus"></i> New Post</button>
+        </div>
+        <div id="feedContainer">`;
+
+                if (!sorted.length) html += '<p class="text-secondary text-center">No posts yet. Start the conversation!</p>';
+
+                sorted.forEach(post => {
+                    const author = post.author || getUserById(post.authorId);
+                    const mediaHtml = post.mediaData
+                        ? (post.mediaType === 'video'
+                            ? `<div class="thread-media"><video controls src="${esc(post.mediaData)}"></video></div>`
+                            : `<div class="thread-media"><img src="${esc(post.mediaData)}" alt="post media" loading="lazy" onerror="this.style.display='none'"></div>`)
+                        : '';
+                    const commentCount = (post.comments || []).length;
+                    const postId = post.id;
+
+                    html += `
+        <div class="thread" data-post-id="${postId}">
+          <div class="thread-header">
+            <div class="avatar">${author.profilePic ? `<img src="${esc(author.profilePic)}" alt="avatar">` : '<i class="fas fa-user"></i>'}</div>
+            <div>
+              <div class="thread-user">${esc(author.name)}</div>
+              <div class="thread-time">${timeAgo(post.timestamp)}</div>
+            </div>
+          </div>
+          <div class="thread-body">${esc(post.content)}</div>
+          ${post.description ? `<div class="thread-desc">📌 ${esc(post.description)}</div>` : ''}
+          ${mediaHtml}
+          <div class="thread-actions">
+            <span class="toggle-comments" data-post-id="${postId}">
+              <i class="far fa-comment"></i> ${commentCount} replies
+            </span>
+          </div>
+          <div class="comments-wrap hidden" id="comments-${postId}">
+            ${(post.comments || []).map(c => {
+                        const cu = c.author || getUserById(c.authorId);
+                        return `<div class="comment">
+                <div class="comment-avatar">${cu.profilePic ? `<img src="${esc(cu.profilePic)}">` : '<i class="fas fa-user"></i>'}</div>
+                <div class="comment-content"><strong>${esc(cu.name)}</strong> ${esc(c.text)}</div>
+              </div>`;
+                    }).join('')}
+            <div class="reply-row">
+              <input type="text" placeholder="Write a reply..." id="replyInput-${postId}">
+              <button class="reply-send" data-post-id="${postId}"><i class="fas fa-paper-plane"></i></button>
+            </div>
+          </div>
+        </div>`;
+                });
+
+                html += '</div>';
+                main.innerHTML = html;
+
+                // Event listeners
+                document.querySelectorAll('.toggle-comments').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const pid = this.dataset.postId;
+                        const wrap = document.getElementById(`comments-${pid}`);
+                        if (wrap) wrap.classList.toggle('hidden');
+                    });
+                });
+
+                document.querySelectorAll('.reply-send').forEach(btn => {
+                    btn.addEventListener('click', async function () {
+                        const pid = this.dataset.postId;
+                        const input = document.getElementById(`replyInput-${pid}`);
+                        if (!input || !input.value.trim()) return;
+
+                        try {
+                            await apiCall(`/api/posts/${pid}/comments`, 'POST', {
+                                authorId: currentUser.id,
+                                text: input.value.trim()
+                            });
+                            input.value = '';
+                            await loadPosts();
+                            renderFeed();
+                        } catch (e) { }
+                    });
+                });
+
+                document.getElementById('newPostBtn')?.addEventListener('click', renderNewPost);
+            }
+
+            function renderNewPost() {
+                main.innerHTML = `
+        <div class="card">
+          <h3><i class="fas fa-edit"></i> Create Thread</h3>
+          <div class="input-group"><label>What's on your mind?</label><textarea id="postContent" rows="3" placeholder="Share notes, ideas, or questions..."></textarea></div>
+          <div class="input-group"><label>Description / Notes Summary</label><input id="postDesc" placeholder="e.g., Chapter 7 - Linear Algebra"></div>
+          <div class="input-group"><label>Media Type</label>
+            <select id="mediaType"><option value="none">None</option><option value="image">Image</option><option value="video">Video</option></select>
+          </div>
+          <div class="input-group"><label>Media URL</label><input id="mediaUrl" placeholder="https://..."></div>
+          <div class="flex-row">
+            <button class="btn" id="publishBtn"><i class="fas fa-paper-plane"></i> Publish</button>
+            <button class="btn outline" id="cancelPost">Cancel</button>
+          </div>
+        </div>`;
+
+                document.getElementById('cancelPost').addEventListener('click', renderFeed);
+
+                document.getElementById('publishBtn').addEventListener('click', async () => {
+                    const content = document.getElementById('postContent').value.trim();
+                    if (!content) { toast('Post content is required.'); return; }
+                    const mediaType = document.getElementById('mediaType').value;
+                    const mediaData = document.getElementById('mediaUrl').value.trim();
+                    const description = document.getElementById('postDesc').value.trim();
+
+                    try {
+                        await apiCall('/api/posts', 'POST', {
+                            authorId: currentUser.id,
+                            content,
+                            mediaType: mediaType !== 'none' ? mediaType : '',
+                            mediaData,
+                            description
+                        });
+                        toast('Post published!', false);
+                        await loadPosts();
+                        renderFeed();
+                    } catch (e) { }
+                });
+            }
+
+            function renderDiscover() {
+                if (!currentUser) { renderLogin(); return; }
+                setActiveNav(navDiscover);
+
+                const otherUsers = users.filter(u => u.id !== currentUser.id);
+
+                let html = `<div class="card"><h3><i class="fas fa-users"></i> Discover Students</h3><div id="discoverList">`;
+
+                if (otherUsers.length === 0) {
+                    html += '<p class="text-center text-secondary">No other students yet.</p>';
+                } else {
+                    otherUsers.forEach(u => {
+                        const isOnline = onlineUsers.has(u.id);
+                        html += `
+            <div class="conversation-list-item" style="justify-content:space-between;">
+              <div style="display:flex;gap:0.8rem;align-items:center;">
+                <div class="avatar" style="width:40px;height:40px;position:relative;">
+                  ${u.profilePic ? `<img src="${esc(u.profilePic)}" alt="avatar">` : '<i class="fas fa-user"></i>'}
+                  ${isOnline ? '<div class="online-dot"></div>' : ''}
+                </div>
+                <div>
+                  <strong>${esc(u.name)}</strong>
+                  <div class="text-secondary">${esc(u.bio || '')} ${isOnline ? '• <span style="color:var(--online);">Online</span>' : '• Offline'}</div>
+                </div>
+              </div>
+              <button class="btn small outline message-user-btn" data-user-id="${u.id}">
+                <i class="fas fa-comment"></i> Message
+              </button>
+            </div>`;
+                    });
+                }
+
+                html += '</div></div>';
+                main.innerHTML = html;
+
+                document.querySelectorAll('.message-user-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const userId = btn.dataset.userId;
+                        await startConversation(userId);
+                    });
+                });
+            }
+
+            async function startConversation(userId) {
+                const otherUser = getUserById(userId);
+                if (!otherUser) return;
+
+                // Find or create conversation
+                const participants = [currentUser.id, userId].sort();
+                const convId = participants.join('_');
+
+                let conversation = conversations.find(c => c.id === convId);
+                if (!conversation) {
+                    conversation = {
+                        id: convId,
+                        participants,
+                        messages: [],
+                        otherUser
+                    };
+                    conversations.push(conversation);
+                }
+
+                unreadMessages.delete(convId);
+                updateMessageBadge();
+                activeConversationId = convId;
+                renderChatWindow(convId);
+            }
+
+            function renderConversationsList() {
+                if (!currentUser) { renderLogin(); return; }
+                setActiveNav(navMessages);
+
+                let html = `
+        <div class="card" style="height:100%;">
+          <h3><i class="fas fa-comments"></i> Messages</h3>
+          <div id="conversationsList" style="flex:1;overflow-y:auto;">`;
+
+                if (conversations.length === 0) {
+                    html += '<p class="text-center text-secondary">No conversations yet. Find students in Discover!</p>';
+                } else {
+                    conversations.forEach(conv => {
+                        const otherUser = conv.otherUser || getUserById(conv.participants.find(p => p !== currentUser.id));
+                        const lastMsg = conv.messages[conv.messages.length - 1];
+                        const isOnline = onlineUsers.has(otherUser.id);
+                        const hasUnread = unreadMessages.has(conv.id);
+
+                        html += `
+            <div class="conversation-list-item conversation-item" data-conv-id="${conv.id}" style="${hasUnread ? 'background:var(--bg3);' : ''}">
+              <div class="avatar" style="width:48px;height:48px;position:relative;">
+                ${otherUser.profilePic ? `<img src="${esc(otherUser.profilePic)}" alt="avatar">` : '<i class="fas fa-user"></i>'}
+                ${isOnline ? '<div class="online-dot"></div>' : ''}
+              </div>
+              <div style="flex:1;">
+                <div class="flex-between">
+                  <strong>${esc(otherUser.name)}</strong>
+                  ${lastMsg ? `<span class="text-secondary">${timeAgo(lastMsg.timestamp)}</span>` : ''}
+                </div>
+                <div class="text-secondary" style="font-size:0.8rem;">
+                  ${lastMsg ? (lastMsg.senderId === currentUser.id ? 'You: ' : '') + esc(lastMsg.text.substring(0, 40)) + (lastMsg.text.length > 40 ? '...' : '') : 'Start a conversation'}
+                  ${hasUnread ? ' • <span style="color:var(--accent);font-weight:600;">New</span>' : ''}
+                </div>
+              </div>
+            </div>`;
+                    });
+                }
+
+                html += '</div></div>';
+                main.innerHTML = html;
+
+                document.querySelectorAll('.conversation-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const convId = item.dataset.convId;
+                        unreadMessages.delete(convId);
+                        updateMessageBadge();
+                        activeConversationId = convId;
+                        renderChatWindow(convId);
+                    });
+                });
+            }
+
+            function renderChatWindow(convId) {
+                const conversation = conversations.find(c => c.id === convId);
+                if (!conversation) return;
+
+                const otherUser = conversation.otherUser || getUserById(conversation.participants.find(p => p !== currentUser.id));
+                const isOnline = onlineUsers.has(otherUser.id);
+
+                setActiveNav(navMessages);
+
+                let html = `
+        <div class="chat-window">
+          <div class="chat-header">
+            <button class="btn outline small" id="backToConversations">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="avatar" style="width:40px;height:40px;position:relative;">
+              ${otherUser.profilePic ? `<img src="${esc(otherUser.profilePic)}" alt="avatar">` : '<i class="fas fa-user"></i>'}
+              ${isOnline ? '<div class="online-dot"></div>' : ''}
+            </div>
+            <div style="flex:1;">
+              <strong>${esc(otherUser.name)}</strong>
+              <div class="text-secondary" style="font-size:0.75rem;">${isOnline ? 'Online' : 'Offline'}</div>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            ${conversation.messages.length === 0 ? '<p class="text-center text-secondary">Send a message to start the conversation!</p>' : ''}
+            ${conversation.messages.map(msg => {
+                    const isSent = msg.senderId === currentUser.id;
+                    return `
+                <div class="message-bubble ${isSent ? 'sent' : 'received'}">
+                  ${esc(msg.text)}
+                  <div class="message-time">${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>`;
+                }).join('')}
+          </div>
+          <div class="typing-indicator" id="typingIndicator"></div>
+          <div class="chat-input-row">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button class="btn" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>`;
+
+                main.innerHTML = html;
+
+                // Scroll to bottom
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Back button
+                document.getElementById('backToConversations').addEventListener('click', () => {
+                    activeConversationId = null;
+                    renderConversationsList();
+                });
+
+                // Send message
+                const sendMessage = () => {
+                    const input = document.getElementById('messageInput');
+                    const text = input.value.trim();
+                    if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+                    ws.send(JSON.stringify({
+                        type: 'send_message',
+                        recipientId: otherUser.id,
+                        text
+                    }));
+
+                    input.value = '';
+                    // Stop typing indicator
+                    ws.send(JSON.stringify({
+                        type: 'typing',
+                        conversationId: convId,
+                        isTyping: false
+                    }));
+                };
+
+                document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendMessage();
+                });
+
+                // Typing indicator
+                let typingTimeout;
+                document.getElementById('messageInput').addEventListener('input', () => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'typing',
+                            conversationId: convId,
+                            isTyping: true
+                        }));
+                        clearTimeout(typingTimeout);
+                        typingTimeout = setTimeout(() => {
+                            ws.send(JSON.stringify({
+                                type: 'typing',
+                                conversationId: convId,
+                                isTyping: false
+                            }));
+                        }, 2000);
+                    }
+                });
+            }
+
+            function renderAIChat() {
+                if (!currentUser) { renderLogin(); return; }
+                setActiveNav(navAI);
+
+                const chatHistory = JSON.parse(localStorage.getItem(`ai_chat_${currentUser.id}`) || '[]');
+
+                let html = `
+        <div class="chat-container">
+          <h2 style="font-weight:700;">
+            <i class="fas fa-robot" style="color:var(--accent);"></i> AI Study Buddy
+            ${!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' ? '<span class="badge" style="background:var(--warning);color:#000;">OFFLINE</span>' : '<span class="badge" style="background:var(--success);">ONLINE</span>'}
+          </h2>
+          <div class="chat-messages" id="aiChatMessages" style="flex:1;">`;
+
+                if (chatHistory.length === 0) {
+                    html += `<div class="chat-bubble ai">Hi ${esc(currentUser.name)}! I'm your AI study assistant. Ask me anything about your courses! 📖</div>`;
+                } else {
+                    chatHistory.forEach(msg => {
+                        const cls = msg.role === 'user' ? 'user' : 'ai';
+                        html += `<div class="chat-bubble ${cls}">${esc(msg.text)}</div>`;
+                    });
+                }
+
+                html += `</div>
+          <div class="chat-input-row">
+            <input type="text" id="aiInput" placeholder="Ask about any subject...">
+            <button class="btn" id="aiSendBtn"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>`;
+
+                main.innerHTML = html;
+
+                const messagesDiv = document.getElementById('aiChatMessages');
+                const aiInput = document.getElementById('aiInput');
+
+                function scrollToBottom() {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+                scrollToBottom();
+
+                function addMessage(role, text) {
+                    chatHistory.push({ role, text });
+                    localStorage.setItem(`ai_chat_${currentUser.id}`, JSON.stringify(chatHistory));
+                    const bubble = document.createElement('div');
+                    bubble.className = `chat-bubble ${role}`;
+                    bubble.textContent = text;
+                    messagesDiv.appendChild(bubble);
+                    scrollToBottom();
+                }
+
+                async function getAIResponse(message) {
+                    if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
+                        // Fallback responses
+                        const msg = message.toLowerCase();
+                        if (msg.includes('hello') || msg.includes('hi')) return "Hey there! 👋 I'm in offline mode. Add your OpenRouter API key for real AI!";
+                        if (msg.includes('calculus')) return "Derivatives measure how a function changes. The derivative of x² is 2x.";
+                        return "Add your OpenRouter API key in the code for real AI responses! Get one at openrouter.ai/keys";
+                    }
+
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                            'HTTP-Referer': window.location.href,
+                            'X-Title': 'StudentLink'
+                        },
+                        body: JSON.stringify({
+                            model: AI_MODEL,
+                            messages: [
+                                { role: 'system', content: AI_SYSTEM_PROMPT },
+                                ...chatHistory.slice(-20).map(m => ({
+                                    role: m.role === 'user' ? 'user' : 'assistant',
+                                    content: m.text
+                                }))
+                            ],
+                            max_tokens: 500
+                        })
+                    });
+
+                    const data = await response.json();
+                    return data.choices?.[0]?.message?.content || 'Sorry, I could not process that.';
+                }
+
+                async function handleSend() {
+                    const text = aiInput.value.trim();
+                    if (!text) return;
+                    aiInput.value = '';
+                    addMessage('user', text);
+
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'ai-typing';
+                    typingDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Thinking...';
+                    messagesDiv.appendChild(typingDiv);
+                    scrollToBottom();
+
+                    try {
+                        const reply = await getAIResponse(text);
+                        typingDiv.remove();
+                        addMessage('ai', reply);
+                    } catch (e) {
+                        typingDiv.remove();
+                        addMessage('ai', 'Sorry, I encountered an error. Please try again.');
+                    }
+                }
+
+                document.getElementById('aiSendBtn').addEventListener('click', handleSend);
+                aiInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleSend();
+                });
+            }
+
+            function renderProfile() {
+                if (!currentUser) { renderLogin(); return; }
+                setActiveNav(navProfile);
+                main.innerHTML = `
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:1rem;">
+            <div class="avatar" style="width:72px;height:72px;">
+              ${currentUser.profilePic ? `<img src="${esc(currentUser.profilePic)}">` : '<i class="fas fa-user fa-2x"></i>'}
+            </div>
+            <div>
+              <h2>${esc(currentUser.name)}</h2>
+              <p class="text-secondary">${esc(currentUser.email)}</p>
+            </div>
+          </div>
+          <p><strong>Bio:</strong> ${esc(currentUser.bio || 'Student')}</p>
+          <button class="btn outline" id="logoutProfileBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>`;
+                document.getElementById('logoutProfileBtn').addEventListener('click', () => {
+                    if (ws) ws.close();
+                    currentUser = null;
+                    updateUI();
+                    renderLogin();
+                    toast('Logged out.');
+                });
+            }
+
+            function renderSettings() {
+                if (!currentUser) { renderLogin(); return; }
+                setActiveNav(navSettings);
+                const currentTheme = localStorage.getItem('sl3_theme') || 'light';
+                main.innerHTML = `
+        <div class="card">
+          <h3><i class="fas fa-palette"></i> Appearance</h3>
+          <div class="flex-row">
+            <button class="btn ${currentTheme === 'light' ? '' : 'outline'}" id="lightTheme">☀️ Light</button>
+            <button class="btn ${currentTheme === 'dark' ? '' : 'outline'}" id="darkTheme">🌙 Dark</button>
+          </div>
+        </div>`;
+                document.getElementById('lightTheme').onclick = () => {
+                    localStorage.setItem('sl3_theme', 'light');
+                    applyTheme();
+                    renderSettings();
+                };
+                document.getElementById('darkTheme').onclick = () => {
+                    localStorage.setItem('sl3_theme', 'dark');
+                    applyTheme();
+                    renderSettings();
+                };
+            }
+
+            // ============ NAVIGATION ============
+            navHome.addEventListener('click', () => {
+                if (!currentUser) renderLogin();
+                else renderFeed();
+            });
+            navDiscover.addEventListener('click', () => {
+                if (!currentUser) { renderLogin(); return; }
+                loadUsers().then(() => renderDiscover());
+            });
+            navMessages.addEventListener('click', () => {
+                if (!currentUser) { renderLogin(); return; }
+                activeConversationId = null;
+                loadConversations().then(() => renderConversationsList());
+            });
+            navAI.addEventListener('click', () => renderAIChat());
+            navProfile.addEventListener('click', () => renderProfile());
+            navSettings.addEventListener('click', () => renderSettings());
+            navLogout.addEventListener('click', () => {
+                if (ws) ws.close();
+                currentUser = null;
+                updateUI();
+                renderLogin();
+                toast('Logged out.');
+            });
+            userPill.addEventListener('click', () => renderProfile());
+
+            // ============ INITIALIZATION ============
+            applyTheme();
+
+            // Try to load from localStorage first (offline fallback)
+            const savedUser = localStorage.getItem('sl3_current');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+            }
+
+            updateUI();
+
+            // Connect to server
+            if (currentUser) {
+                connectWebSocket();
+                Promise.all([loadUsers(), loadPosts(), loadConversations()])
+                    .then(() => renderFeed())
+                    .catch(() => {
+                        // If server is offline, show login
+                        renderLogin();
+                    });
+            } else {
+                renderLogin();
+            }
+        })();
+    </script>
+</body>
+
+</html>
+
+
+
+git init
+git add .
+git commit -m "StudentLink app"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/studentlink.git
+git push -u origin main
