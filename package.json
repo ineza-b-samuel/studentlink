@@ -1,7 +1,7 @@
 {
     "name": "studentlink-server",
-    "version": "1.0.0",
-    "description": "StudentLink real-time messaging server",
+    "version": "2.0.0",
+    "description": "StudentLink with groups, social features, and AI integration",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
