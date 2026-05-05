@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ============ DATA STORE (In production, use a real database) ============
+// ============ DATA STORE ============
 let users = [
     {
         id: 'u1',
@@ -60,7 +60,9 @@ let posts = [
                 text: 'Count me in!',
                 timestamp: Date.now() - 1800000
             }
-        ]
+        ],
+        likes: ['u1', 'u2'],
+        shares: 2
     },
     {
         id: 'p2',
@@ -70,14 +72,26 @@ let posts = [
         mediaData: 'https://www.w3schools.com/html/mov_bbb.mp4',
         description: 'Physics Lab Report',
         timestamp: Date.now() - 7200000,
-        comments: []
+        comments: [],
+        likes: ['u1'],
+        shares: 0
     }
 ];
 
-// Direct messages: { conversationId: { participants: [], messages: [] } }
-let conversations = {};
+// Groups system
+let groups = [
+    {
+        id: 'g1',
+        name: 'CS Study Group',
+        description: 'Computer Science study sessions and project collaboration',
+        creatorId: 'u1',
+        members: ['u1', 'u2'],
+        posts: [],
+        createdAt: Date.now() - 86400000
+    }
+];
 
-// WebSocket connections: { userId: ws }
+let conversations = {};
 const connections = new Map();
 
 // ============ HELPER FUNCTIONS ============
@@ -99,6 +113,10 @@ function getUserById(id) {
     return users.find(u => u.id === id);
 }
 
+function getGroupById(id) {
+    return groups.find(g => g.id === id);
+}
+
 function broadcastUserStatus(userId, status) {
     const message = JSON.stringify({
         type: 'user_status',
@@ -109,6 +127,18 @@ function broadcastUserStatus(userId, status) {
     connections.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(message);
+        }
+    });
+}
+
+function broadcastToGroup(groupId, message) {
+    const group = getGroupById(groupId);
+    if (!group) return;
+
+    group.members.forEach(memberId => {
+        const memberWs = connections.get(memberId);
+        if (memberWs && memberWs.readyState === WebSocket.OPEN) {
+            memberWs.send(JSON.stringify(message));
         }
     });
 }
@@ -130,12 +160,12 @@ app.post('/api/register', (req, res) => {
         password,
         profilePic: profilePic || '',
         bio: bio || 'Student',
-        online: false
+        online: false,
+        createdAt: Date.now()
     };
 
     users.push(newUser);
 
-    // Don't send password back
     const { password: _, ...userWithoutPassword } = newUser;
     res.json({ user: userWithoutPassword });
 });
@@ -153,7 +183,7 @@ app.post('/api/login', (req, res) => {
     res.json({ user: userWithoutPassword });
 });
 
-// Get all users (for discover)
+// Get all users
 app.get('/api/users', (req, res) => {
     const usersWithoutPasswords = users.map(({ password, ...rest }) => rest);
     res.json({ users: usersWithoutPasswords });
@@ -184,12 +214,13 @@ app.post('/api/posts', (req, res) => {
         mediaData: mediaData || '',
         description: description || '',
         timestamp: Date.now(),
-        comments: []
+        comments: [],
+        likes: [],
+        shares: 0
     };
 
     posts.unshift(newPost);
 
-    // Broadcast new post to all connected users
     const broadcast = JSON.stringify({
         type: 'new_post',
         post: { ...newPost, author: getUserById(authorId) }
@@ -204,7 +235,7 @@ app.post('/api/posts', (req, res) => {
     res.json({ post: newPost });
 });
 
-// Add comment to post
+// Add comment
 app.post('/api/posts/:postId/comments', (req, res) => {
     const { postId } = req.params;
     const { authorId, text } = req.body;
@@ -223,7 +254,6 @@ app.post('/api/posts/:postId/comments', (req, res) => {
 
     post.comments.push(newComment);
 
-    // Broadcast updated post
     const broadcast = JSON.stringify({
         type: 'new_comment',
         postId,
@@ -239,7 +269,179 @@ app.post('/api/posts/:postId/comments', (req, res) => {
     res.json({ comment: newComment });
 });
 
-// Get conversations for a user
+// Like/Unlike post
+app.post('/api/posts/:postId/like', (req, res) => {
+    const { postId } = req.params;
+    const { userId } = req.body;
+
+    const post = posts.find(p => p.id === postId);
+    if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const likeIndex = post.likes.indexOf(userId);
+    if (likeIndex > -1) {
+        post.likes.splice(likeIndex, 1);
+    } else {
+        post.likes.push(userId);
+    }
+
+    res.json({ likes: post.likes.length, liked: likeIndex === -1 });
+});
+
+// Share post
+app.post('/api/posts/:postId/share', (req, res) => {
+    const { postId } = req.params;
+    const post = posts.find(p => p.id === postId);
+
+    if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+    }
+
+    post.shares++;
+    res.json({ shares: post.shares });
+});
+
+// ============ GROUP ROUTES ============
+
+// Get all groups
+app.get('/api/groups', (req, res) => {
+    const groupsWithDetails = groups.map(group => ({
+        ...group,
+        creator: getUserById(group.creatorId),
+        members: group.members.map(mId => {
+            const user = getUserById(mId);
+            return user ? { id: user.id, name: user.name, profilePic: user.profilePic } : null;
+        }).filter(Boolean),
+        memberCount: group.members.length
+    }));
+    res.json({ groups: groupsWithDetails });
+});
+
+// Get single group
+app.get('/api/groups/:groupId', (req, res) => {
+    const group = getGroupById(req.params.groupId);
+    if (!group) {
+        return res.status(404).json({ error: 'Group not found' });
+    }
+
+    const groupWithDetails = {
+        ...group,
+        creator: getUserById(group.creatorId),
+        members: group.members.map(mId => {
+            const user = getUserById(mId);
+            return user ? { id: user.id, name: user.name, profilePic: user.profilePic, bio: user.bio } : null;
+        }).filter(Boolean),
+        posts: group.posts.map(post => ({
+            ...post,
+            author: getUserById(post.authorId)
+        }))
+    };
+
+    res.json({ group: groupWithDetails });
+});
+
+// Create group
+app.post('/api/groups', (req, res) => {
+    const { name, description, creatorId } = req.body;
+
+    const newGroup = {
+        id: uuidv4(),
+        name,
+        description: description || '',
+        creatorId,
+        members: [creatorId],
+        posts: [],
+        createdAt: Date.now()
+    };
+
+    groups.push(newGroup);
+
+    // Broadcast new group
+    const broadcast = JSON.stringify({
+        type: 'new_group',
+        group: { ...newGroup, creator: getUserById(creatorId) }
+    });
+
+    connections.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(broadcast);
+        }
+    });
+
+    res.json({ group: newGroup });
+});
+
+// Join group
+app.post('/api/groups/:groupId/join', (req, res) => {
+    const { groupId } = req.params;
+    const { userId } = req.body;
+
+    const group = getGroupById(groupId);
+    if (!group) {
+        return res.status(404).json({ error: 'Group not found' });
+    }
+
+    if (!group.members.includes(userId)) {
+        group.members.push(userId);
+
+        // Notify group members
+        broadcastToGroup(groupId, {
+            type: 'member_joined',
+            groupId,
+            userId,
+            userName: getUserById(userId)?.name
+        });
+    }
+
+    res.json({ group });
+});
+
+// Leave group
+app.post('/api/groups/:groupId/leave', (req, res) => {
+    const { groupId } = req.params;
+    const { userId } = req.body;
+
+    const group = getGroupById(groupId);
+    if (!group) {
+        return res.status(404).json({ error: 'Group not found' });
+    }
+
+    group.members = group.members.filter(id => id !== userId);
+    res.json({ group });
+});
+
+// Post in group
+app.post('/api/groups/:groupId/posts', (req, res) => {
+    const { groupId } = req.params;
+    const { authorId, content } = req.body;
+
+    const group = getGroupById(groupId);
+    if (!group) {
+        return res.status(404).json({ error: 'Group not found' });
+    }
+
+    const newPost = {
+        id: uuidv4(),
+        authorId,
+        content,
+        timestamp: Date.now(),
+        comments: [],
+        likes: []
+    };
+
+    group.posts.unshift(newPost);
+
+    broadcastToGroup(groupId, {
+        type: 'new_group_post',
+        groupId,
+        post: { ...newPost, author: getUserById(authorId) }
+    });
+
+    res.json({ post: newPost });
+});
+
+// Get conversations
 app.get('/api/conversations/:userId', (req, res) => {
     const { userId } = req.params;
 
@@ -251,18 +453,6 @@ app.get('/api/conversations/:userId', (req, res) => {
         }));
 
     res.json({ conversations: userConversations });
-});
-
-// Get messages for a conversation
-app.get('/api/conversations/:convId/messages', (req, res) => {
-    const { convId } = req.params;
-    const conversation = conversations[convId];
-
-    if (!conversation) {
-        return res.json({ messages: [] });
-    }
-
-    res.json({ messages: conversation.messages });
 });
 
 // ============ WEBSOCKET HANDLING ============
@@ -278,14 +468,12 @@ wss.on('connection', (ws) => {
                     userId = message.userId;
                     connections.set(userId, ws);
 
-                    // Update user online status
                     const user = getUserById(userId);
                     if (user) {
                         user.online = true;
                         broadcastUserStatus(userId, 'online');
                     }
 
-                    // Send current online users to the newly connected user
                     const onlineUsers = users.filter(u => u.online).map(u => u.id);
                     ws.send(JSON.stringify({
                         type: 'online_users',
@@ -307,7 +495,6 @@ wss.on('connection', (ws) => {
 
                     conversation.messages.push(newMessage);
 
-                    // Send to recipient if online
                     const recipientWs = connections.get(recipientId);
                     if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
                         recipientWs.send(JSON.stringify({
@@ -320,7 +507,6 @@ wss.on('connection', (ws) => {
                         }));
                     }
 
-                    // Also send back to sender for confirmation
                     ws.send(JSON.stringify({
                         type: 'message_sent',
                         conversationId: conversation.id,
@@ -371,4 +557,6 @@ server.listen(PORT, () => {
     console.log(`🚀 StudentLink server running on http://localhost:${PORT}`);
     console.log(`📡 WebSocket server ready for real-time messaging`);
     console.log(`👥 Default users: mia@studentlink.edu / pass123`);
+    console.log(`👥 Groups: CS Study Group created`);
+    console.log(`🤖 AI Chat: Working with OpenRouter API`);
 });
